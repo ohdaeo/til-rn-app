@@ -1,13 +1,12 @@
+import {NavigationContainer} from '@react-navigation/native';
 import React from 'react';
-import {SafeAreaView, Text, View} from 'react-native';
+import ScreenStackNavigator from './src/navigations/ScreenStackNavigator';
 
 const App = () => {
   return (
-    <SafeAreaView>
-      <View>
-        <Text>Hello</Text>
-      </View>
-    </SafeAreaView>
+    <NavigationContainer>
+      <ScreenStackNavigator />
+    </NavigationContainer>
   );
 };
 

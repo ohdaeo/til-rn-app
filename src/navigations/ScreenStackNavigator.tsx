@@ -3,6 +3,7 @@ import React from 'react';
 import HomeScreen from '../screens/HomeScreen';
 import AboutScreen from '../screens/AboutScreen';
 import WebViewScreen from '../screens/WebViewScreen';
+import ProfileScreen from '../screens/ProfileScreen';
 
 const ScreenStackNavigator = (): JSX.Element => {
   /**
@@ -16,6 +17,7 @@ const ScreenStackNavigator = (): JSX.Element => {
       <stack.Screen name="Home" component={HomeScreen} />
       <stack.Screen name="About" component={AboutScreen} />
       <stack.Screen name="WebView" component={WebViewScreen} />
+      <stack.Screen name="Profile" component={ProfileScreen} />
     </stack.Navigator>
   );
 };

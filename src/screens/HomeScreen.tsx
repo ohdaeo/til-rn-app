@@ -14,6 +14,10 @@ const HomeScreen = ({navigation}: {navigation: any}): JSX.Element => {
           title={'WebView 이동'}
           onPress={() => navigation.navigate('WebView')}
         />
+        <Button
+          title={'Profile 이동'}
+          onPress={() => navigation.navigate('Profile')}
+        />
       </View>
     </SafeAreaView>
   );
@@ -23,7 +27,6 @@ const HomeScreen = ({navigation}: {navigation: any}): JSX.Element => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'red',
   },
 });
 

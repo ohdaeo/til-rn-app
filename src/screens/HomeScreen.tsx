@@ -7,16 +7,8 @@ const HomeScreen = ({navigation}: {navigation: any}): JSX.Element => {
       <View>
         <Text>Home Screen</Text>
         <Button
-          title={'About 이동'}
-          onPress={() => navigation.navigate('About')}
-        />
-        <Button
-          title={'WebView 이동'}
-          onPress={() => navigation.navigate('WebView')}
-        />
-        <Button
-          title={'Profile 이동'}
-          onPress={() => navigation.navigate('Profile')}
+          title={'상세화면 이동'}
+          onPress={() => navigation.navigate('Detail')}
         />
       </View>
     </SafeAreaView>

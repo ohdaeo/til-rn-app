@@ -1,867 +1,530 @@
-# React Native
+# Navigator
 
-## Component 예제
+## 네비게이션 (라우터 처럼 생각하기)
 
-### 기본예제
+[React Navigation](https://reactnavigation.org/docs/getting-started)
+[Navigating Between Screens](https://reactnative.dev/docs/navigation)
 
-- src\screens\ProfileScreen.tsx
+- 위의 내용으로는 어려움이 있습니다.
+  [React-native navigation 이용하여 개발하기](https://velog.io/@slobber/React-native-navigation-%EC%9D%B4%EC%9A%A9%ED%95%98%EC%97%AC-%EA%B0%9C%EB%B0%9C%ED%95%98%EA%B8%B0)
+
+### 1. 환경 셋팅
+
+[React Navigation](https://reactnavigation.org/)
+
+[stack-navigator](https://reactnavigation.org/docs/stack-navigator)
+
+```bash
+npm install @react-navigation/native@6.1.18
+npm install @react-navigation/stack@6.4.1
+npm install @react-native-masked-view/masked-view@0.3.1
+npm install react-native-gesture-handler@2.20.0
+npm install react-native-safe-area-context@4.11.0
+npm install react-native-screens@3.34.0
+```
+
+## MainActivity.java 수정
+
+- android/app/src/main/java/com/프로젝트명/MainActivity.java 수정
+- 샘플 work 프로젝트
+  - `android/app/src/main/java/com/work/MainActivity.java` 수정
+
+```java
+package com.tilapp;
+
+
+import com.facebook.react.ReactActivity;
+// 추가
+import android.os.Bundle;
+
+import com.facebook.react.ReactActivityDelegate;
+import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint;
+import com.facebook.react.defaults.DefaultReactActivityDelegate;
+
+public class MainActivity extends ReactActivity {
+
+  /**
+   * Returns the name of the main component registered from JavaScript. This is used to schedule
+   * rendering of the component.
+   */
+  @Override
+  protected String getMainComponentName() {
+    return "work";
+  }
+
+  /**
+   * Returns the instance of the {@link ReactActivityDelegate}. Here we use a util class {@link
+   * DefaultReactActivityDelegate} which allows you to easily enable Fabric and Concurrent React
+   * (aka React 18) with two boolean flags.
+   */
+  @Override
+  protected ReactActivityDelegate createReactActivityDelegate() {
+    return new DefaultReactActivityDelegate(
+        this,
+        getMainComponentName(),
+        // If you opted-in for the New Architecture, we enable the Fabric Renderer.
+        DefaultNewArchitectureEntryPoint.getFabricEnabled());
+  }
+
+// 추가
+  @Override
+  protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(null);
+  }
+}
+```
+
+## Screen 구성하기
+
+- src\screens\HomeScreen.tsx
+
+```tsx
+import React from 'react';
+import {SafeAreaView, View, Text, StyleSheet, Button} from 'react-native';
+
+const HomeScreen = ({navigation}: {navigation: any}): JSX.Element => {
+  return (
+    <SafeAreaView style={styles.container}>
+      <View>
+        <Text>Home Screen</Text>
+        <Button
+          title={'상세화면 이동'}
+          onPress={() => navigation.navigate('Detail')}
+        />
+      </View>
+    </SafeAreaView>
+  );
+};
+
+// css
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
+});
+
+export default HomeScreen;
+```
+
+- src\screens\DetailScreen.tsx
 
 ```tsx
 import React from 'react';
 import {SafeAreaView, StyleSheet, Text, View} from 'react-native';
 
-function ProfileScreen() {
+function DetailScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <View>
-        <Text>ProfileScreen</Text>
+        <Text>DetailScreen</Text>
       </View>
     </SafeAreaView>
   );
 }
 
+export default DetailScreen;
+
 const styles = StyleSheet.create({
-  // 전체 너비 차지하기
   container: {
     flex: 1,
     alignItems: 'center',
   },
 });
-
-export default ProfileScreen;
 ```
 
-- src\navigations\ScreenStackNavigator.tsx
+## Navigation 연결하기
+
+1. App.tsx
 
 ```tsx
-<stack.Screen name="Profile" component={ProfileScreen} /> // 추가
-```
+import React from 'react';
+import {NavigationContainer} from '@react-navigation/native';
+import {createStackNavigator} from '@react-navigation/stack';
+import DetailScreen from './src/screens/DetailScreen';
+import HomeScreen from './src/screens/HomeScreen';
 
-### 응용예제
+const Stack = createStackNavigator();
 
-- src\screens\ProfileScreen.tsx
-
-```tsx
-import React, {useState} from 'react';
-import {
-  Alert,
-  Button,
-  Image,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
-
-function ProfileScreen() {
-  const [name, setName] = useState('');
-  const [introduce, setIntroduce] = useState('');
-  const [submittes, setSubmittes] = useState(false);
-
-  const handlePress = () => {
-    if (name.trim() === '' || introduce.trim() === '') {
-      return Alert.alert('이름과 자기소개를 입력하세요', '', [{text: '확인'}]);
-    }
-    setSubmittes(true);
-    Alert.alert('수정이 완료되었습니다', '', [{text: '확인'}]);
-  };
-
+const App = (): JSX.Element => {
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={[styles.container, {width: '100%'}]}>
-        <Image
-          source={{uri: 'https://picsum.photos/200'}}
-          style={styles.image}
-        />
-        <TextInput
-          style={styles.input}
-          value={name}
-          onChangeText={setName}
-          placeholder="이름을 입력하세요"
-        />
-        <TextInput
-          style={styles.input}
-          value={introduce}
-          onChangeText={setIntroduce}
-          multiline
-          placeholder="자기소개를 입력하세요"
-        />
-        <Button title="나의 프로필" onPress={handlePress} />
-
-        {submittes && (
-          <View style={styles.resultBox}>
-            <Text style={styles.resultText}>{name}</Text>
-            <Text style={styles.resultText}>{introduce}</Text>
-          </View>
-        )}
-      </View>
-    </SafeAreaView>
+    <NavigationContainer>
+      <Stack.Navigator>
+        <Stack.Screen name="Home" component={HomeScreen} />
+        <Stack.Screen name="Detail" component={DetailScreen} />
+      </Stack.Navigator>
+    </NavigationContainer>
   );
-}
-
-const styles = StyleSheet.create({
-  // 전체 너비 차지하기
-  container: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  image: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    marginBottom: 20,
-    borderWidth: 2,
-    borderColor: '#ccc',
-  },
-  input: {
-    width: '90%',
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 10,
-    padding: 12,
-    marginBottom: 15,
-    backgroundColor: '#fff',
-  },
-  resultBox: {
-    marginTop: 30,
-    alignItems: 'center',
-  },
-  resultText: {
-    fontSize: 16,
-    marginTop: 5,
-    color: '#333',
-  },
-});
-
-export default ProfileScreen;
-```
-
-### 심화예제
-
-- src\screens\ProfileScreen.tsx
-
-```tsx
-import React, {useState} from 'react';
-import {
-  Alert,
-  FlatList,
-  SafeAreaView,
-  StyleSheet,
-  Switch,
-  Text,
-  View,
-} from 'react-native';
-import {TouchableOpacity} from 'react-native-gesture-handler';
-
-type Task = {
-  id: string;
-  title: string;
-  done: boolean;
 };
 
-export default function ProfileScreen() {
-  const [tasks, setTasks] = useState<Task[]>([
-    {id: '1', title: 'Good morning', done: true},
-    {id: '2', title: 'Good afternoon', done: false},
-    {id: '3', title: 'Good night', done: false},
-  ]);
+export default App;
+```
 
-  // 할일 목록 중 state의 done을 true로 바꾸는 함수
-  const toggleSwitch = (id: string) => {
-    setTasks(prev =>
-      prev.map(item => (item.id === id ? {...item, done: !item.done} : item)),
-    );
-  };
+1. NavigationContainer
 
-  const renderItem = ({item}: {item: Task}) => (
-    <View style={styles.itemRow}>
-      <Text style={[styles.itemText, item.done && styles.checkedText]}>
-        {item.done ? '✅' : '❌'} {item.title}
-      </Text>
-      <Switch
-        value={item.done}
-        onValueChange={() => {
-          toggleSwitch(item.id);
-        }}
-        thumbColor={item.done ? 'orange' : 'gray'}
-        trackColor={{false: '#ccc', true: 'green'}}
+- 애플리케이션의 전체 네비게이션 상태를 관리하는 최상위 컨테이너입니다
+- 모든 네비게이터 컴포넌트는 반드시 NavigationContainer 내부에 위치해야 합니다
+- 네비게이션 상태와 테마를 전역적으로 관리합니다
+
+2. Stack.Navigator
+
+- 스택 기반 네비게이션을 제공하는 네비게이터 컴포넌트입니다
+- 각 스크린은 스택 구조로 관리되어 순차적으로 화면 전환이 이루어집니다
+- iOS에서는 UINavigationController, Android에서는 Fragment를 활용하여 네이티브 성능을 제공합니다
+
+```tsx
+// 헤더 관련 옵션
+<Stack.Navigator
+  screenOptions={{
+    headerStyle: {
+      backgroundColor: '#f4511e',
+    },
+    headerTintColor: '#fff',
+    headerTitleStyle: {
+      fontWeight: 'bold',
+    },
+  }}
+/>
+```
+
+3. Stack.Screen
+
+- 실제 화면을 렌더링하는 컴포넌트입니다
+- name과 component props를 통해 특정 이름으로 스크린을 정의하고 연결합니다
+- 각 스크린별로 독립적인 옵션을 설정할 수 있습니다
+
+```tsx
+// 기본 옵션
+<Stack.Screen name="Home" component={HomeScreen}
+  options={{
+    title: '홈화면', // 헤더 제목
+    headerStyle: {
+    backgroundColor: '#f4511e', // 헤더 배경 색상
+    },
+    headerTintColor: '#fff', // 헤더 글자 색상
+    headerTitleStyle: {
+    // 제목 스타일
+    fontWeight: 'bold',
+    },
+    headerTitleAlign: 'center', // 제목 가운데 정렬
+    // headerShown: false, // 헤더 숨기기
+    gestureEnabled: true, // 제스처 활성화
+  }}
+/>
+
+// 프레젠테이션 모드
+<Stack.Screen
+  name="ModalScreen"
+  component={ModalScreen}
+  options={{
+    presentation: 'modal',         // 모달 형태로 표시
+    animationTypeForReplace: 'push', // replace 애니메이션 유형
+  }}
+/>
+
+// 폼 시트(Bottom Sheet)
+<Stack.Screen
+  name="BottomSheet"
+  component={BottomSheetScreen}
+  options={{
+    presentation: 'formSheet',
+    headerShown: false,
+    sheetAllowedDetents: [0.2, 0.5, 0.8], // 높이 조절
+  }}
+/>
+
+<Stack.Screen
+  name="Detail"
+  component={DetailScreen}
+  options={{
+    title: '상세 화면',
+    headerStyle: {backgroundColor: 'hotpink'},
+    headerTintColor: '#fff',
+    headerTitleAlign: 'left',
+    headerShown: true,
+    gestureEnabled: true,
+    animationEnabled: true, // 애니메이션 활성화
+    animationTypeForReplace: 'push', // 애니메이션 종류
+    headerRight: () => (
+      // 오른쪽 버튼
+      <Button
+        title="Info"
+        color={'blue'}
+        onPress={() => Alert.alert('안녕')}
       />
-    </View>
-  );
+    ),
+    headerLeft: () => (
+      // 왼쪽 버튼
+      <Button
+        title="Info"
+        color={'red'}
+        onPress={() => Alert.alert('반가워')}
+      />
+    ),
+  }}
+/>
 
+// navigation prop을 사용하여 뒤로가기 버튼 추가
+<Stack.Screen
+  name="Detail"
+  component={DetailScreen}
+  options={({navigation}) => ({
+    title: '상세화면',
+    headerStyle: {backgroundColor: 'hotpink'},
+    headerTintColor: '#fff',
+    headerTitleAlign: 'center',
+    headerLeft: () => (
+      <Button
+        title="뒤로가기"
+        color={'red'}
+        onPress={() => navigation.goBack()}
+      />
+    ),
+  })}
+/>
+```
+
+**headerRight props 데이터 전달하기**
+
+- App.tsx
+
+```tsx
+<Stack.Screen
+  name="Detail"
+  component={DetailScreen}
+  options={({navigation}) => ({
+    // navigation prop을 사용하여 뒤로가기 버튼 추가
+    title: '상세화면',
+    headerStyle: {backgroundColor: 'hotpink'},
+    headerTintColor: '#fff',
+    headerTitleAlign: 'center',
+    headerLeft: () => (
+      <Button
+        title="뒤로가기"
+        color={'red'}
+        onPress={() => navigation.goBack()}
+      />
+    ),
+  })}
+/>
+```
+
+- src\screens\DetailScreen.tsx
+
+```tsx
+import {RouteProp, useRoute} from '@react-navigation/native';
+import React from 'react';
+import {SafeAreaView, StyleSheet, Text, View} from 'react-native';
+
+// route 에 추가적으로 우리가 만든 prop 전달하기
+type RootStackParamList = {
+  Details: {userId: number};
+};
+type DetailRouteProp = RouteProp<RootStackParamList, 'Details'>;
+
+const DetailScreen = () => {
+  const route = useRoute<DetailRouteProp>();
+  const {userId} = route.params;
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.viewContainer}>
-        <Text style={styles.title}>할일 체크리스트</Text>
-        {/* 목록출력 */}
-        <FlatList
-          data={tasks}
-          renderItem={renderItem}
-          keyExtractor={item => item.id}
-          ItemSeparatorComponent={() => <View style={styles.separator} />}
-        />
-        <TouchableOpacity
-          style={styles.button}
-          onPress={() => Alert.alert('오늘도 화이팅하세요. ^^')}>
-          <Text style={styles.buttonText}>메시지 보내기</Text>
-        </TouchableOpacity>
+      <View>
+        <Text>{userId} 상세화면입니다.</Text>
       </View>
     </SafeAreaView>
   );
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    width: '100%',
-  },
-  viewContainer: {
-    flex: 1,
-    width: '100%',
-    padding: 30,
-    backgroundColor: '#f2f2f2',
-  },
-  title: {
-    fontSize: 22,
-    marginBottom: 20,
-    fontWeight: 'bold',
-  },
-  itemRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingVertical: 14,
-    paddingHorizontal: 10,
-    backgroundColor: '#fff',
-    borderRadius: 8,
-  },
-  itemText: {
-    fontSize: 18,
-  },
-  checkedText: {
-    textDecorationLine: 'line-through',
-    color: 'gray',
-  },
-  separator: {
-    height: 10,
-  },
-  button: {
-    marginTop: 30,
-    backgroundColor: '#4CAF50',
-    paddingVertical: 12,
-    borderRadius: 10,
-    alignItems: 'center',
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-  },
-});
-```
-
-### 심화예제 (Todo List)
-
-- src\screens\ProfileScreen.tsx
-
-```tsx
-import React, {useState} from 'react';
-import {
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  SafeAreaView,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from 'react-native';
-
-export default function ProfileScreen() {
-  // 할 일 목록을 관리하기 위한 상태
-  const [task, setTask] = useState('');
-  // 할 일 목록을 저장하기 위한 상태
-  const [taskList, setTaskList] = useState<string[]>([]);
-  // 할 일 추가 함수
-  const haneleAddTask = () => {
-    if (task.trim() === '') {
-      Alert.alert('할 일을 입력하세요');
-      return;
-    }
-    setTaskList(prev => [...taskList, task]);
-    setTask('');
-  };
-
-  // KeyboardAvoidingView : 키보드가 올라올 때 화면을 밀어주는 컴포넌트
-  return (
-    <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView
-        style={{flex: 1}}
-        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}>
-        <View style={[styles.container, styles.view]}>
-          <Text style={styles.title}>📑 오늘 할일</Text>
-          {/* 할 일 입력 */}
-          <View style={styles.inputRow}>
-            <TextInput
-              style={styles.input}
-              value={task}
-              onChangeText={setTask}
-              placeholder="할 일을 입력해주세요"
-            />
-            <TouchableOpacity style={styles.addButton} onPress={haneleAddTask}>
-              <Text style={styles.addButtonText}>추가</Text>
-            </TouchableOpacity>
-          </View>
-          {/* 할 일 목록 */}
-          <ScrollView style={styles.list}>
-            {taskList.map((item, index) => (
-              <Text key={index} style={styles.taskItem}>
-                ◾ {item}
-              </Text>
-            ))}
-          </ScrollView>
-        </View>
-      </KeyboardAvoidingView>
-    </SafeAreaView>
-  );
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    padding: 16,
-  },
-  view: {
-    width: '100%',
-    padding: 24,
-    backgroundColor: '#f0f4f8',
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    marginBottom: 20,
-  },
-  inputRow: {
-    flexDirection: 'row',
-    marginBottom: 20,
-  },
-  input: {
-    flex: 1,
-    backgroundColor: 'white',
-    borderRadius: 8,
-    paddingHorizontal: 14,
-    paddingVertical: 10,
-    fontSize: 16,
-    borderWidth: 1,
-    borderColor: '#ccc',
-  },
-  addButton: {
-    backgroundColor: '#4CAF50',
-    marginLeft: 10,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    justifyContent: 'center',
-  },
-  addButtonText: {
-    color: 'white',
-    fontSize: 16,
-  },
-  list: {
-    flex: 1,
-    marginTop: 10,
-  },
-  taskItem: {fontSize: 16, marginBottom: 12},
-});
-```
-
-### 응용예제 (팝업창 만들기)
-
-- src\screens\ProfileScreen.tsx
-
-```tsx
-import React, {useState} from 'react';
-import {
-  Alert,
-  Modal,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
-
-export default function ProfileScreen() {
-  // 모달 상태 관리
-  const [modalVisible, setModalVisible] = useState(false);
-
-  // 모달 확인 버튼 클릭 시 동작
-  const handleConfirm = () => {
-    setModalVisible(!modalVisible);
-    Alert.alert('안내보기 확인', '안내를 확인했습니다.');
-  };
-
-  return (
-    <SafeAreaView style={styles.container}>
-      <View style={[styles.container, styles.view]}>
-        <TouchableOpacity
-          style={styles.openButton}
-          onPress={() => setModalVisible(!modalVisible)}>
-          <Text style={styles.openButtonText}>👨‍✈️ 안내보기</Text>
-        </TouchableOpacity>
-        <Modal transparent visible={modalVisible}>
-          <View style={styles.modalBg}>
-            <View style={styles.modalBox}>
-              <Text style={styles.modalTitle}>⛔ 개인정보 안내</Text>
-              <Text style={styles.modalContent}>
-                이 앱은 사용자 정보를 저장하지 않습니다.
-              </Text>
-              <View style={styles.buttonRow}>
-                <TouchableOpacity
-                  style={[styles.modalButton, {backgroundColor: '#ff0000'}]}
-                  onPress={() => setModalVisible(!modalVisible)}>
-                  <Text style={{color: '#fff'}}>닫기</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.modalButton, {backgroundColor: '#3eec8c'}]}
-                  onPress={handleConfirm}>
-                  <Text style={{color: '#fff'}}>확인</Text>
-                </TouchableOpacity>
-              </View>
-            </View>
-          </View>
-        </Modal>
-      </View>
-    </SafeAreaView>
-  );
-}
-
+};
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     alignItems: 'center',
   },
-  view: {
-    width: '100%',
-    backgroundColor: 'white',
-  },
-  openButton: {
-    backgroundColor: '#2196F3',
-    padding: 14,
-    borderRadius: 10,
-  },
-  openButtonText: {
-    fontSize: 18,
-    color: '#fff',
-  },
-  modalBg: {
-    flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.3)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modalBox: {
-    backgroundColor: 'white',
-    padding: 25,
-    borderRadius: 12,
-    width: '80%',
-    alignItems: 'center',
-  },
-  modalTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginBottom: 12,
-  },
-  modalContent: {
-    fontSize: 16,
-    textAlign: 'center',
-    marginBottom: 20,
-  },
-  buttonRow: {
-    flexDirection: 'row',
-    gap: 10,
-  },
-  modalButton: {
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 8,
-    marginHorizontal: 5,
-  },
 });
+
+export default DetailScreen;
 ```
 
-### 응용예제 (FlatList)
-
-- src\screens\ProfileScreen.tsx
-
-```tsx
-import React, {useRef, useState} from 'react';
-import {
-  Dimensions,
-  FlatList,
-  Image,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
-//현재 화면의 가로너비를 가져오기
-const {width} = Dimensions.get('window');
-
-// 외부에서 데이터를 가져옮
-const datas = [
-  {id: '1', uri: 'https://i.pravatar.cc/400'},
-  {id: '2', uri: 'https://i.pravatar.cc/400'},
-  {id: '3', uri: 'https://i.pravatar.cc/400'},
-];
-export default function ProfileScreen() {
-  // 현재 인덱스를 상태로 관리
-  const [currentIndex, setCurrentIndex] = useState(0);
-
-  const flatListRef = useRef<FlatList>(null); // FlatList의 참조를 저장하기 위한 ref
-
-  // FlatList의 각 아이템을 렌더링하는 함수
-  const renderItem = ({item}: {item: {id: string; uri: string}}) => (
-    <Image source={{uri: item.uri}} style={styles.image} />
-  );
-
-  // 스크롤 이벤트를 처리하는 함수
-  const handleScroll = (event: any) => {
-    // 슬라이드의 현재 인덱스를 계산
-    const index = Math.round(event.nativeEvent.contentOffset.x / width);
-    setCurrentIndex(index);
-  };
-
-  return (
-    <SafeAreaView style={styles.container}>
-      <View style={(styles.container, {width: '100%'})}>
-        <FlatList
-          ref={flatListRef} // FlatList의 참조를 설정
-          data={datas}
-          renderItem={renderItem}
-          keyExtractor={item => item.id}
-          horizontal // 가로로 스크롤 가능하게
-          pagingEnabled // 페이지 단위로 스크롤 가능하게
-          showsHorizontalScrollIndicator={false} // 스크롤바 숨기기
-          onScroll={handleScroll}
-        />
-        <View style={styles.indicateRow}>
-          {datas.map((_, index) => (
-            <View
-              key={index}
-              style={[styles.dot, currentIndex === index && styles.activeDot]}
-            />
-          ))}
-        </View>
-      </View>
-    </SafeAreaView>
-  );
-}
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  image: {
-    width: width, // 사진은 화면 가로 크기만큼
-    height: 300, // 높이는 300으로 고정
-    resizeMode: 'cover', // 사진이 잘 안리게 채워요
-  },
-  indicateRow: {flexDirection: 'row', justifyContent: 'center', marginTop: 20},
-  dot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: '#ccc',
-    marginHorizontal: 5,
-  },
-  activeDot: {
-    backgroundColor: 'hotpink',
-  },
-});
-```
-
-## AsyndStorage
-
-- key-value 형식의 저장소
-- 브라우저에서 사용하는 localStorage와 비슷
+## Tab Navigation
 
 ```bash
-npm install @react-native-async-storage/async-storage
+npm install @react-navigation/bottom-tabs@^6.x
 ```
 
-### 기본예제
-
-- src\screens\ProfileScreen.tsx
+- App.tsx
 
 ```tsx
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import React, {useEffect, useState} from 'react';
-import {
-  Alert,
-  Button,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+import {NavigationContainer} from '@react-navigation/native';
+import React from 'react';
+import DetailScreen from './src/screens/DetailScreen';
+import HomeScreen from './src/screens/HomeScreen';
 
-export default function ProfileScreen() {
-  const [name, setName] = useState('');
+const Tab = createBottomTabNavigator();
 
-  // AsyncStorage에 이름 저장
-  const handleSaveName = async () => {
-    try {
-      await AsyncStorage.setItem('user_name', name);
-      Alert.alert('저장완료', '이름이 저장되었습니다.');
-    } catch (error) {
-      console.log('Error saving name:', error);
-    }
-  };
-
-  //
-  const loadData = async () => {
-    try {
-      const result = await AsyncStorage.getItem('user_name');
-      console.log('불러오기', result);
-      if (result !== null) {
-        setName(result);
-        Alert.alert('저장된 이름', result);
-      }
-    } catch (error) {
-      console.log('Error loading name:', error);
-    }
-  };
-
-  // AsyncStorage에서 이름 읽기
-  useEffect(() => {
-    loadData();
-  }, []);
-
+const App = (): JSX.Element => {
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={[styles.container, {width: '100%'}]}>
-        <Text>간단 저장 및 읽어오기</Text>
-        <TextInput
-          placeholder="이름을 입력해주세요"
-          value={name}
-          onChangeText={setName}
+    <NavigationContainer>
+      <Tab.Navigator>
+        <Tab.Screen
+          name="Home"
+          component={HomeScreen}
+          options={{title: '홈화면'}}
         />
-        <Button title="이름저장" onPress={() => handleSaveName()} />
-        <Text>저장된 이름 : {name}</Text>
-      </View>
-    </SafeAreaView>
+        <Tab.Screen
+          name="Details"
+          component={DetailScreen}
+          options={{title: '상세화면'}}
+        />
+      </Tab.Navigator>
+    </NavigationContainer>
   );
-}
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-  },
-});
-```
-
-### 응용예제
-
-- src\screens\ProfileScreen.tsx
-
-```tsx
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import React, {useEffect, useState} from 'react';
-import {
-  Alert,
-  FlatList,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
-} from 'react-native';
-
-// Key명
-const STORAGE_KEY = '@tasks2';
-
-type Task = {
-  id: string;
-  title: string;
 };
 
-export default function ProfileScreen() {
-  const [tasks, setTasks] = useState<Task[]>([]);
-  const [input, setInput] = useState('');
+export default App;
+```
 
-  const renderItem = ({item}: {item: Task}) => (
-    <View style={styles.taskItem}>
-      <Text style={styles.taskText}>{item.title}</Text>
-      <TouchableOpacity
-        style={styles.deleteBtn}
-        onPress={() => handleDelete(item.id)}>
-        <Text style={styles.deleteText}>삭제</Text>
-      </TouchableOpacity>
-    </View>
-  );
+```bash
+npm install react-native-vector-icons
+npm install -D @types/react-native-vector-icons
+```
 
-  // 할 일 추가 버튼 클릭 시
-  const handleAdd = () => {
-    if (input.trim() === '') {
-      Alert.alert('입력 오류', '할 일을 입력해주세요!');
-      return;
-    }
+- android\app\build.gradle
 
-    const newTask: Task = {
-      id: Date.now().toString(),
-      title: input.trim(),
-    };
+```java
+apply from: file ("../../node_modules/react-native-vector-icons/fonts.gradle")
+// add this line
+```
 
-    setTasks(prev => [...prev, newTask]);
-    setInput('');
-  };
+[react-native-vector-icons directory](https://oblador.github.io/react-native-vector-icons/)
 
-  // 할 일 삭제 버튼 클릭 시
-  const handleDelete = (id: string) => {
-    Alert.alert('삭제 확인', '정말 삭제할까요?', [
-      {text: '취소', style: 'cancel'},
-      {
-        text: '삭제',
-        style: 'destructive',
-        onPress: () => {
-          setTasks(prev => prev.filter(task => task.id !== id));
-        },
-      },
-    ]);
-  };
+- App.tsx
 
-  // 자료 불러오기
-  const loadTasks = async () => {
-    try {
-      const stored = await AsyncStorage.getItem(STORAGE_KEY);
-      if (stored === null) {
-        Alert.alert('저장된 할 일이 없습니다.');
-        return;
-      }
-      //json 문자열 이기 때문에
-      const parsed = JSON.parse(stored);
+```tsx
+import {createBottomTabNavigator} from '@react-navigation/bottom-tabs';
+import {NavigationContainer} from '@react-navigation/native';
+import React from 'react';
+import Ionicons from 'react-native-vector-icons/Ionicons';
+import DetailScreen from './src/screens/DetailScreen';
+import HomeScreen from './src/screens/HomeScreen';
 
-      if (Array.isArray(parsed)) {
-        setTasks(parsed);
-      } else {
-        console.warn('저장된 데이터 형식이 올바르지 않습니다.');
-      }
-    } catch (error) {
-      console.error('Error loading tasks from AsyncStorage:', error);
-    }
-  };
+const Tab = createBottomTabNavigator();
 
-  // 할 일 목록이 변경될 때마다 불러오기
-  useEffect(() => {
-    // 자료 저장하기
-    const saveTasks = async () => {
-      try {
-        await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
-        Alert.alert('저장된 할 일이 저장되었습니다.');
-      } catch (error) {
-        console.error('Error saving tasks to AsyncStorage:', error);
-      }
-    };
-    saveTasks();
-  }, [tasks]);
-
-  // 첫 마운트 할 일 목록을 불러오기
-  useEffect(() => {
-    loadTasks();
-  }, []);
-
+const App = (): JSX.Element => {
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={[styles.container, {width: '100%'}]}>
-        <Text style={styles.title}>📚 저장되는 할 일 목록</Text>
-        <FlatList
-          data={tasks}
-          renderItem={renderItem}
-          keyExtractor={item => item.id}
-          ListEmptyComponent={
-            <Text style={{color: 'red'}}>할 일이 없습니다.</Text>
-          }
+    <NavigationContainer>
+      <Tab.Navigator>
+        <Tab.Screen
+          name="Home"
+          component={HomeScreen}
+          options={{
+            title: '홈화면',
+            headerStyle: {backgroundColor: '#f4511e'},
+            headerTintColor: '#fff',
+            tabBarLabel: '홈입니다', // 탭에 표시될 제목
+            tabBarIcon: ({focused, color, size}) => {
+              let iconName = '';
+              iconName = focused ? 'heart-sharp' : 'heart-outline';
+              // 아이콘 반환
+              return <Ionicons name={iconName} size={size} color={color} />;
+            },
+            tabBarActiveTintColor: 'blue',
+            tabBarInactiveTintColor: 'gray',
+            tabBarStyle: {
+              backgroundColor: 'skyblue',
+              height: 70,
+            },
+            tabBarBadge: 'message',
+            tabBarShowLabel: false,
+          }}
         />
-        <View style={styles.inputRow}>
-          <TextInput
-            style={styles.input}
-            placeholder="할 일을 입력해주세요"
-            value={input}
-            onChangeText={setInput}
-          />
-          <TouchableOpacity style={styles.addBtn} onPress={handleAdd}>
-            <Text style={styles.addText}>추가</Text>
-          </TouchableOpacity>
-        </View>
-      </View>
-    </SafeAreaView>
+      </Tab.Navigator>
+    </NavigationContainer>
   );
-}
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: 'center',
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    marginBottom: 14,
-  },
-  taskItem: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderColor: '#eee',
-  },
-  taskText: {
-    fontSize: 16,
-  },
-  deleteBtn: {
-    backgroundColor: '#ff4d4d',
-    paddingVertical: 4,
-    paddingHorizontal: 12,
-    borderRadius: 6,
-  },
-  deleteText: {
-    color: '#fff',
-    fontWeight: '600',
-  },
-  inputRow: {
-    flexDirection: 'row',
-    marginTop: 20,
-    padding: 20,
-  },
-  input: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: '#ccc',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    fontSize: 16,
-  },
-  addBtn: {
-    backgroundColor: '#4CAF50',
-    marginLeft: 10,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    justifyContent: 'center',
-  },
-  addText: {
-    color: '#fff',
-    fontWeight: '600',
-    fontSize: 16,
-    paddingVertical: 8,
-  },
-});
+};
+
+export default App;
+```
+
+## Drawer Navigation
+
+- babel.config.js 수정
+
+```js
+module.exports = {
+  presets: ['module:metro-react-native-babel-preset'],
+  plugins: ['react-native-reanimated/plugin'],
+};
+```
+
+```bash
+npm i react-native-reanimated@3.5.4
+npm install @react-navigation/drawer@6.6.9
+```
+
+- 디버깅 1. (문제발생시)
+
+```bash
+cd android
+./gradlew clean
+cd ..
+npm start
+a
+```
+
+- 디버깅 2. (문제발생시)
+
+```bash
+# 1. 캐시 및 빌드 폴더 삭제
+rm -rf node_modules android/app/build android/.gradle
+
+# 2. 패키지 재설치
+npm install
+
+# 3. Metro 번들러 캐시 초기화
+npx react-native start --reset-cache
+```
+
+- App.tsx
+
+```tsx
+import {createDrawerNavigator} from '@react-navigation/drawer';
+import {NavigationContainer} from '@react-navigation/native';
+import React from 'react';
+import DetailScreen from './src/screens/DetailScreen';
+import HomeScreen from './src/screens/HomeScreen';
+// 아이콘
+import Icon from 'react-native-vector-icons/Ionicons';
+
+const Drawer = createDrawerNavigator();
+const App = (): JSX.Element => {
+  return (
+    <NavigationContainer>
+      <Drawer.Navigator
+        initialRouteName="Home"
+        screenOptions={{
+          drawerType: 'front', // 메뉴 보여주는 옵션
+        }}>
+        <Drawer.Screen
+          name="Home"
+          component={HomeScreen}
+          options={{
+            title: '홈',
+            drawerLabel: '나의 홈',
+            drawerIcon: ({color, size}) => (
+              <Icon name="person-outline" size={size} color={color} />
+            ),
+            drawerActiveTintColor: 'red',
+            drawerInactiveTintColor: 'gray',
+            headerStyle: {
+              backgroundColor: 'skyblue',
+            },
+            headerTintColor: 'white',
+            // headerShown: false,
+          }}
+        />
+        <Drawer.Screen name="Details" component={DetailScreen} />
+      </Drawer.Navigator>
+    </NavigationContainer>
+  );
+};
+
+export default App;
 ```

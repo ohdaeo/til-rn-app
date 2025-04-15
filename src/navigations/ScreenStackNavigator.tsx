@@ -5,20 +5,17 @@ import AboutScreen from '../screens/AboutScreen';
 import WebViewScreen from '../screens/WebViewScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 
-const ScreenStackNavigator = (): JSX.Element => {
-  /**
-   *screen 스택에 대한 정보관리
-   *변수명을 Stack으로 설정
-   */
-  const stack = createStackNavigator();
-
+const ScreenStackNavigator = () => {
+  // screen 스택에 대한 정보관리
+  // 관례상 변수명을 Stack 으로 한다.(참조)
+  const Stack = createStackNavigator();
   return (
-    <stack.Navigator>
-      <stack.Screen name="Home" component={HomeScreen} />
-      <stack.Screen name="About" component={AboutScreen} />
-      <stack.Screen name="WebView" component={WebViewScreen} />
-      <stack.Screen name="Profile" component={ProfileScreen} />
-    </stack.Navigator>
+    <Stack.Navigator>
+      <Stack.Screen name="Home" component={HomeScreen} />
+      <Stack.Screen name="About" component={AboutScreen} />
+      <Stack.Screen name="WebView" component={WebViewScreen} />
+      <Stack.Screen name="Profile" component={ProfileScreen} />
+    </Stack.Navigator>
   );
 };
 

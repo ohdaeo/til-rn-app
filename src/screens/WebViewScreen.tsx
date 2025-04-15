@@ -4,25 +4,26 @@ import {
   SafeAreaView,
   StyleSheet,
   Text,
-  TouchableOpacity,
   View,
+  TouchableOpacity,
 } from 'react-native';
-
 import WebView from 'react-native-webview';
 
 const WebViewScreen = (): JSX.Element => {
-  const webUrl = 'http://192.168.0.76:3000';
+  const webUrl = 'http://192.168.0.66:3000';
 
-  // webview의 url 에 있는 페이지가 모두 로딩이 되었는지 체크한다.
-  const [isLoading, setIsLoading] = useState<boolean>(false);
+  // WebView 의 url 에 있는 페이지가 모두 로딩이 되었는지 체크
+  const [isLoaded, setIsLoaded] = useState<boolean>(false);
 
-  // 어떤 webview를 대상으로 메세지를 체크하는지 확인한다.
+  // 어떤 WebView를 대상으로 메시지 체크를 할 것인가?
   const webViewRef = useRef<WebView>(null);
 
-  const [count, setCount] = useState<number>(0); // count state
-  const [message, setMessage] = useState<string>(''); // 전달 받은 message
+  // count state 관련
+  const [count, setCount] = useState<number>(0);
+  // 전달 받은 message 관련
+  const [message, setMessage] = useState<string>('');
 
-  // webview 로 데이터를 보내는 함수
+  // 웹 뷰로 데이터를 보내는 함수
   const sendDataWeb = (data: any) => {
     const messageData = JSON.stringify(data);
     webViewRef.current?.injectJavaScript(`
@@ -30,67 +31,61 @@ const WebViewScreen = (): JSX.Element => {
       true;
     `);
   };
-  // webview 로 데이터를 받는 함수
+
+  // 웹 뷰로 부터 데이터를 받는 함수
   const onMessage = (event: any) => {
     const data = event.nativeEvent.data;
-    console.log('data', data);
+    console.log(data);
+
     if (data === 'load') {
-      setIsLoading(true);
-      sendDataWeb({type: 'INIT_DATA', payload: {message: 'Hello Next!'}});
+      setIsLoaded(true);
+      // 모두 준비가 되었으니 Webview 로 메시지를 보내준다.
+      sendDataWeb({type: 'INIT_DATA', payload: {message: 'Hellow Next!'}});
       return;
     }
-    // WebView 에서 INIT_DATA 글자가 전송됐을 경우
+    // Webview 에서 INIT_DATA 글자가 전송된 경우
     if (data === 'INIT_DATA') {
       setCount(0);
       return;
     }
-    // 날짜가 전송됐을 경우
+    // 날짜가 전송된 경우
     setMessage(data);
   };
-
+  // 버튼 클릭시 count 값을 1 올려주고, 데이터 전송
   const handleButtonClick = () => {
-    //버튼 클릭 시 카운트 증가
     const temp = count + 1;
     setCount(temp);
-    // WebView 로 카운트 데이터 전송
-    sendDataWeb({
-      type: 'UPDATE_COUNT',
-      payload: {count: temp},
-    });
+    // Webview 로 전송
+    sendDataWeb({type: 'UPDATE_COUNT', payload: {count: temp}});
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <WebView
-        style={styles.webview}
         ref={webViewRef}
         onMessage={onMessage}
         injectedJavaScript={`
-          window.ReactNativeWebView.postMessage('load');
-          window.addEventListener('message', function(event){
-          try{
-          const data = JSON.parse(event.data);
-          if(data.type === 'UPDATE_COUNT'){
-          // 웹페이지에서 카운트 데이터 처리
-        console.log('Count updated :',data.payload.count )
-          }
-          }
-          catch(e){
-        console.log(e)
-          }
-          });
-          true;
+            window.ReactNativeWebView.postMessage('load');
+            window.addEventListener('message', function(event){
+                try {
+                    const data = JSON.parse(event.data);
+                    if(data.type === 'UPDATE_COUNT' ) {
+                        // 웹페이지에서 카운트 데이터 처리
+                        console.log('Count updated : ', data.payload.count)
+                    }
+                } catch (e) { 
+                 console.log(e)
+                }
+            });
+            true;
         `}
-        source={{uri: webUrl}} // 웹뷰에서 보여줄 url
-        startInLoadingState={true} // 로딩중일때 로딩화면을 보여준다.
+        style={styles.webview}
+        source={{uri: webUrl}} // webview 에 보여줄 주소
+        startInLoadingState={true} // webview 로딩 인디케이터 표시
+        // 로딩 중일 때 보여줄 내용
         renderLoading={() => (
-          <View>
-            {/* 로딩중일때 보여줄 화면 */}
-            <ActivityIndicator
-              style={styles.loadingContainer}
-              size="large"
-              color="#0000ff"
-            />
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#0000ff" />
           </View>
         )}
       />
@@ -107,14 +102,15 @@ const WebViewScreen = (): JSX.Element => {
     </SafeAreaView>
   );
 };
-
 // css
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: 'blue',
   },
-  webview: {flex: 1},
+  webview: {
+    flex: 1,
+  },
   loadingContainer: {
     position: 'absolute',
     top: 0,
@@ -150,10 +146,9 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   buttonTxt: {
-    color: 'white',
-    fontSize: 20,
+    color: '#ffffff',
+    fontSize: 24,
     fontWeight: 'bold',
   },
 });
-
 export default WebViewScreen;
